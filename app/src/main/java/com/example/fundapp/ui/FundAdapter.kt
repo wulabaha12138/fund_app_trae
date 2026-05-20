@@ -1,7 +1,6 @@
 package com.example.fundapp.ui
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -16,25 +15,7 @@ class FundAdapter(
     private val onClearAllClick: () -> Unit
 ) : ListAdapter<FundWithAmount, FundAdapter.FundViewHolder>(FundDiffCallback()) {
 
-    inner class FundViewHolder(val binding: FundItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        private var stockAdapter: StockAdapter? = null
-
-        init {
-            binding.btnExpand.setOnClickListener {
-                val isExpanded = binding.holdingsLayout.visibility == android.view.View.VISIBLE
-                binding.holdingsLayout.visibility = if (isExpanded) android.view.View.GONE else android.view.View.VISIBLE
-                binding.btnExpand.setBackgroundResource(
-                    if (isExpanded) android.R.drawable.arrow_down_float 
-                    else android.R.drawable.arrow_up_float
-                )
-            }
-
-            binding.btnDelete.setOnClickListener {
-                val fund = getItem(adapterPosition)
-                onDeleteClick(fund.fund.code)
-            }
-        }
-
+    class FundViewHolder(val binding: FundItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: FundWithAmount) {
             binding.tvFundCode.text = item.fund.code
             binding.tvFundName.text = item.fund.name
@@ -49,63 +30,22 @@ class FundAdapter(
             val earningsStr = String.format("%.2f", item.estimatedEarnings)
             binding.tvEarnings.text = if (item.estimatedEarnings >= 0) "+$earningsStr" else earningsStr
 
-            val colorRes = if (item.fund.changePercent >= 0) {
-                android.R.color.holo_red_dark
-            } else {
-                android.R.color.holo_green_dark
-            }
+            val colorRes = if (item.fund.changePercent >= 0) android.R.color.holo_red_dark else android.R.color.holo_green_dark
             binding.tvChangePercent.setTextColor(itemView.context.getColor(colorRes))
             binding.tvChange.setTextColor(itemView.context.getColor(colorRes))
             binding.tvEarnings.setTextColor(itemView.context.getColor(colorRes))
 
-            binding.tvAmount.text = String.format("持有: %.2f元", item.amount)
+            binding.tvAmount.text = "持有: " + String.format("%.2f", item.amount) + "元"
             binding.tvUpdateTime.text = item.fund.updateTime
 
-            stockAdapter = StockAdapter()
+            val stockAdapter = StockAdapter()
             binding.rvHoldings.adapter = stockAdapter
-            stockAdapter?.submitList(item.fund.holdings)
-        }
-    }
-
-    inner class StockAdapter : ListAdapter<Stock, StockViewHolder>(StockDiffCallback()) {
-        inner class StockViewHolder(val binding: StockItemBinding) : RecyclerView.ViewHolder(binding.root) {
-            fun bind(item: Stock) {
-                binding.tvStockName.text = item.name
-                binding.tvStockCode.text = item.code
-                binding.tvProportion.text = String.format("%.2f%%", item.proportion)
-                
-                val changeStr = String.format("%.2f%%", item.change)
-                binding.tvChange.text = if (item.change >= 0) "+$changeStr" else changeStr
-                
-                val colorRes = if (item.change >= 0) {
-                    android.R.color.holo_red_dark
-                } else {
-                    android.R.color.holo_green_dark
-                }
-                binding.tvChange.setTextColor(itemView.context.getColor(colorRes))
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockViewHolder {
-            val binding = StockItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-            return StockViewHolder(binding)
-        }
-
-        override fun onBindViewHolder(holder: StockViewHolder, position: Int) {
-            holder.bind(getItem(position))
+            stockAdapter.submitList(item.fund.holdings)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FundViewHolder {
-        val binding = FundItemBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+        val binding = FundItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return FundViewHolder(binding)
     }
 
@@ -114,22 +54,39 @@ class FundAdapter(
     }
 
     class FundDiffCallback : DiffUtil.ItemCallback<FundWithAmount>() {
-        override fun areItemsTheSame(oldItem: FundWithAmount, newItem: FundWithAmount): Boolean {
-            return oldItem.fund.code == newItem.fund.code
-        }
+        override fun areItemsTheSame(oldItem: FundWithAmount, newItem: FundWithAmount): Boolean =
+            oldItem.fund.code == newItem.fund.code
+        override fun areContentsTheSame(oldItem: FundWithAmount, newItem: FundWithAmount): Boolean =
+            oldItem == newItem
+    }
+}
 
-        override fun areContentsTheSame(oldItem: FundWithAmount, newItem: FundWithAmount): Boolean {
-            return oldItem == newItem
+class StockAdapter : ListAdapter<Stock, StockAdapter.StockViewHolder>(StockDiffCallback()) {
+    class StockViewHolder(val binding: StockItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Stock) {
+            binding.tvStockName.text = item.name
+            binding.tvStockCode.text = item.code
+            binding.tvProportion.text = String.format("%.2f%%", item.proportion)
+            val changeStr = String.format("%.2f%%", item.change)
+            binding.tvChange.text = if (item.change >= 0) "+$changeStr" else changeStr
+            val colorRes = if (item.change >= 0) android.R.color.holo_red_dark else android.R.color.holo_green_dark
+            binding.tvChange.setTextColor(itemView.context.getColor(colorRes))
         }
     }
 
-    class StockDiffCallback : DiffUtil.ItemCallback<Stock>() {
-        override fun areItemsTheSame(oldItem: Stock, newItem: Stock): Boolean {
-            return oldItem.code == newItem.code
-        }
-
-        override fun areContentsTheSame(oldItem: Stock, newItem: Stock): Boolean {
-            return oldItem == newItem
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StockViewHolder {
+        val binding = StockItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return StockViewHolder(binding)
     }
+
+    override fun onBindViewHolder(holder: StockViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+}
+
+class StockDiffCallback : DiffUtil.ItemCallback<Stock>() {
+    override fun areItemsTheSame(oldItem: Stock, newItem: Stock): Boolean =
+        oldItem.code == newItem.code
+    override fun areContentsTheSame(oldItem: Stock, newItem: Stock): Boolean =
+        oldItem == newItem
 }
