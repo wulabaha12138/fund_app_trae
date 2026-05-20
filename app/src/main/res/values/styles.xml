@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.FundApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.FundApp" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorBackground">@color/background</item>
         <item name="colorSurface">@color/surface</item>
@@ -15,6 +15,8 @@
         <item name="android:statusBarColor" tools:targetApi="l">@color/primary</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
+
+    <style name="TextAppearance" parent="TextAppearance.AppCompat.Body2" />
 
     <style name="TextAppearance.Title">
         <item name="android:textSize">18sp</item>
