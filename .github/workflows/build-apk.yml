@@ -28,7 +28,7 @@ jobs:
       run: rm -f app/src/main/res/mipmap-*/ic_launcher*.png
 
     - name: Build APK
-      run: gradle assembleRelease
+      run: gradle assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
