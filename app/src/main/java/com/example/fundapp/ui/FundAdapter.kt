@@ -2,6 +2,7 @@ package com.example.fundapp.ui
 
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -23,7 +24,7 @@ class FundAdapter(
             binding.btnExpand.setOnClickListener {
                 val isExpanded = binding.holdingsLayout.visibility == View.VISIBLE
                 binding.holdingsLayout.visibility = if (isExpanded) View.GONE else View.VISIBLE
-                binding.btnExpand.setImageResource(
+                binding.btnExpand.setBackgroundResource(
                     if (isExpanded) android.R.drawable.arrow_down_float 
                     else android.R.drawable.arrow_up_float
                 )
