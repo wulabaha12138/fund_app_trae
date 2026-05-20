@@ -3,10 +3,10 @@ package com.example.fundapp.ui
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fundapp.databinding.ActivityMainBinding
@@ -45,8 +45,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSwipeRefresh() {
-        swipeRefreshLayout = findViewById(R.id.swipeRefresh)
-        swipeRefreshLayout?.setOnRefreshListener {
+        binding.swipeRefresh.setOnRefreshListener {
             viewModel.refreshFunds()
         }
     }
@@ -66,11 +65,11 @@ class MainActivity : AppCompatActivity() {
         viewModel.funds.observe(this) { funds ->
             fundAdapter.submitList(funds)
             binding.emptyView.visibility = if (funds.isEmpty()) View.VISIBLE else View.GONE
-            swipeRefreshLayout?.isRefreshing = false
+            binding.swipeRefresh.isRefreshing = false
         }
 
         viewModel.isRefreshing.observe(this) { isRefreshing ->
-            swipeRefreshLayout?.isRefreshing = isRefreshing
+            binding.swipeRefresh.isRefreshing = isRefreshing
         }
 
         viewModel.errorMessage.observe(this) { message ->
