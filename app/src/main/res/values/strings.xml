@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">基金追踪</string>
+    <string name="add_fund">添加基金</string>
+    <string name="fund_code">基金代码</string>
+    <string name="fund_amount">持有金额（元）</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="delete">删除</string>
+    <string name="clear_all">清空全部</string>
+    <string name="refresh">刷新</string>
+    <string name="no_funds">暂无基金，点击添加</string>
+    <string name="delete_confirm">确定要删除该基金吗？</string>
+    <string name="clear_confirm">确定要清空所有基金吗？</string>
+    <string name="estimated_earnings">预估收益</string>
+    <string name="holdings">持仓股票</string>
+    <string name="stock_name">股票名称</string>
+    <string name="proportion">占比</string>
+    <string name="change">涨跌幅</string>
+    <string name="loading">加载中...</string>
+    <string name="network_error">网络错误</string>
+    <string name="invalid_code">无效的基金代码</string>
+    <string name="fund_not_found">未找到该基金</string>
+    <string name="last_trading_day">上一交易日</string>
+    <string name="morning_close">午间休市</string>
+    <string name="trading">交易中</string>
+</resources>
