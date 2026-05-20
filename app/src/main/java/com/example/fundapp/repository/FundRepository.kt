@@ -11,6 +11,8 @@ import com.example.fundapp.network.response.HoldingResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class FundRepository {
@@ -19,7 +21,7 @@ class FundRepository {
     private val fundApiService by lazy { FundApiService.create() }
 
     fun getAllFundsWithAmount(): Flow<List<FundWithAmount>> {
-        return fundDao.getAllFunds().combine(getAllFundData()) { entities, funds ->
+        return fundDao.getAllFunds().combine(flow { emit(getAllFundData()) }) { entities, funds ->
             entities.map { entity ->
                 val fund = funds.firstOrNull { it.code == entity.code }
                 FundWithAmount(
@@ -38,9 +40,10 @@ class FundRepository {
     }
 
     private suspend fun getAllFundData(): List<Fund> {
-        return fundDao.getAllFunds().firstOrNull()?.map { entity ->
-            getFundData(entity.code)
-        } ?: emptyList()
+        val entities = fundDao.getAllFunds()
+        val entityList = withContext(Dispatchers.IO) { mutableListOf<FundEntity>().also { entities.collect { it.forEach { e -> it.add(e) } } } }
+        if (entityList.isEmpty()) return emptyList()
+        return entityList.map { entity -> getFundData(entity.code) }
     }
 
     suspend fun getFundData(code: String): Fund {
@@ -55,27 +58,19 @@ class FundRepository {
     suspend fun addFund(code: String, amount: Double = 0.0): Boolean {
         return try {
             val response = fundApiService.getFundData(code)
-            val fundEntity = FundEntity(
-                code = response.code,
-                name = response.name,
-                amount = amount
-            )
+            val fundEntity = FundEntity(code = response.code, name = response.name, amount = amount)
             fundDao.insertFund(fundEntity)
             true
         } catch (e: Exception) {
-            val fundEntity = FundEntity(
-                code = code,
-                name = "测试基金$code",
-                amount = amount
-            )
+            val fundEntity = FundEntity(code = code, name = "测试基金$code", amount = amount)
             fundDao.insertFund(fundEntity)
             true
         }
     }
 
     suspend fun deleteFund(code: String) {
-        fundDao.getFundByCode(code)?.let {
-            fundDao.deleteFund(it)
+        withContext(Dispatchers.IO) {
+            fundDao.getFundByCode(code)?.let { fundDao.deleteFund(it) }
         }
     }
 
@@ -88,26 +83,15 @@ class FundRepository {
     }
 
     private fun convertToFund(response: FundResponse): Fund {
-        return Fund(
-            code = response.code,
-            name = response.name,
-            netValue = response.netValue,
-            change = response.change,
-            changePercent = response.changePercent,
+        return Fund(code = response.code, name = response.name, netValue = response.netValue,
+            change = response.change, changePercent = response.changePercent,
             holdings = response.holdings.map { convertToStock(it) },
-            isEstimated = response.isEstimated,
-            updateTime = response.updateTime
-        )
+            isEstimated = response.isEstimated, updateTime = response.updateTime)
     }
 
     private fun convertToStock(holding: HoldingResponse): Stock {
-        return Stock(
-            code = holding.code,
-            name = holding.name,
-            proportion = holding.proportion,
-            change = holding.change,
-            price = holding.price
-        )
+        return Stock(code = holding.code, name = holding.name, proportion = holding.proportion,
+            change = holding.change, price = holding.price)
     }
 
     private fun createMockFund(code: String): Fund {
@@ -119,15 +103,8 @@ class FundRepository {
             Stock("600036", "招商银行", 7.2, 1.15, 35.6)
         )
         val estimatedChange = mockHoldings.sumOf { it.proportion * it.change } / 100
-        return Fund(
-            code = code,
-            name = "测试基金$code",
-            netValue = 1.2345,
-            change = estimatedChange * 0.012345,
-            changePercent = estimatedChange,
-            holdings = mockHoldings,
-            isEstimated = true,
-            updateTime = "2024-01-15 10:30"
-        )
+        return Fund(code = code, name = "测试基金$code", netValue = 1.2345,
+            change = estimatedChange * 0.012345, changePercent = estimatedChange,
+            holdings = mockHoldings, isEstimated = true, updateTime = "2024-01-15 10:30")
     }
 }
