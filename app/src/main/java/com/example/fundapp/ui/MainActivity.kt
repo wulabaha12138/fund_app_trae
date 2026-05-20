@@ -1,5 +1,6 @@
 package com.example.fundapp.ui
 
+import com.example.fundapp.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
