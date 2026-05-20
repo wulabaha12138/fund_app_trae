@@ -15,9 +15,6 @@ gen/
 out/
 build/
 build-intermediates/
-gradle/
-!gradle/wrapper/
-!**/src/main/**/gradle-wrapper.jar
 
 # Gradle files
 .gradle/
