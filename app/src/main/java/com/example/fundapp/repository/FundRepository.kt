@@ -11,8 +11,8 @@ import com.example.fundapp.network.response.HoldingResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class FundRepository {
@@ -21,29 +21,14 @@ class FundRepository {
     private val fundApiService by lazy { FundApiService.create() }
 
     fun getAllFundsWithAmount(): Flow<List<FundWithAmount>> {
-        return fundDao.getAllFunds().combine(flow { emit(getAllFundData()) }) { entities, funds ->
+        return fundDao.getAllFunds().combine(flow { emit(emptyList<Fund>()) }) { entities, _ ->
             entities.map { entity ->
-                val fund = funds.firstOrNull { it.code == entity.code }
                 FundWithAmount(
-                    fund ?: Fund(
-                        code = entity.code,
-                        name = entity.name,
-                        netValue = 0.0,
-                        change = 0.0,
-                        changePercent = 0.0,
-                        holdings = emptyList()
-                    ),
+                    Fund(code = entity.code, name = entity.name, netValue = 0.0, change = 0.0, changePercent = 0.0, holdings = emptyList()),
                     entity.amount
                 )
             }
         }
-    }
-
-    private suspend fun getAllFundData(): List<Fund> {
-        val entities = fundDao.getAllFunds()
-        val entityList = withContext(Dispatchers.IO) { mutableListOf<FundEntity>().also { entities.collect { it.forEach { e -> it.add(e) } } } }
-        if (entityList.isEmpty()) return emptyList()
-        return entityList.map { entity -> getFundData(entity.code) }
     }
 
     suspend fun getFundData(code: String): Fund {
@@ -58,12 +43,10 @@ class FundRepository {
     suspend fun addFund(code: String, amount: Double = 0.0): Boolean {
         return try {
             val response = fundApiService.getFundData(code)
-            val fundEntity = FundEntity(code = response.code, name = response.name, amount = amount)
-            fundDao.insertFund(fundEntity)
+            fundDao.insertFund(FundEntity(code = response.code, name = response.name, amount = amount))
             true
         } catch (e: Exception) {
-            val fundEntity = FundEntity(code = code, name = "测试基金$code", amount = amount)
-            fundDao.insertFund(fundEntity)
+            fundDao.insertFund(FundEntity(code = code, name = "测试基金$code", amount = amount))
             true
         }
     }
@@ -78,30 +61,23 @@ class FundRepository {
         fundDao.deleteAllFunds()
     }
 
-    suspend fun getFundCount(): Int {
-        return fundDao.getFundCount()
-    }
+    suspend fun getFundCount(): Int =
+        fundDao.getFundCount()
 
-    private fun convertToFund(response: FundResponse): Fund {
-        return Fund(code = response.code, name = response.name, netValue = response.netValue,
+    private fun convertToFund(response: FundResponse): Fund =
+        Fund(code = response.code, name = response.name, netValue = response.netValue,
             change = response.change, changePercent = response.changePercent,
             holdings = response.holdings.map { convertToStock(it) },
             isEstimated = response.isEstimated, updateTime = response.updateTime)
-    }
 
-    private fun convertToStock(holding: HoldingResponse): Stock {
-        return Stock(code = holding.code, name = holding.name, proportion = holding.proportion,
+    private fun convertToStock(holding: HoldingResponse): Stock =
+        Stock(code = holding.code, name = holding.name, proportion = holding.proportion,
             change = holding.change, price = holding.price)
-    }
 
     private fun createMockFund(code: String): Fund {
         val mockHoldings = listOf(
             Stock("600519", "贵州茅台", 10.5, 2.35, 1680.0),
-            Stock("000858", "五粮液", 8.2, -1.25, 145.5),
-            Stock("601318", "中国平安", 6.8, 0.85, 48.2),
-            Stock("000001", "平安银行", 5.5, -0.55, 12.8),
-            Stock("600036", "招商银行", 7.2, 1.15, 35.6)
-        )
+            Stock("000858", "五粮液", 8.2, -1.25, 145.5))
         val estimatedChange = mockHoldings.sumOf { it.proportion * it.change } / 100
         return Fund(code = code, name = "测试基金$code", netValue = 1.2345,
             change = estimatedChange * 0.012345, changePercent = estimatedChange,
