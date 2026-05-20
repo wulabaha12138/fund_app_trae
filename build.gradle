@@ -4,21 +4,10 @@ buildscript {
     ext.room_version = "2.5.2"
     ext.lifecycle_version = "2.6.2"
     
-    repositories {
-        google()
-        mavenCentral()
-    }
     dependencies {
         classpath "com.android.tools.build:gradle:8.1.4"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:2.48"
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
     }
 }
 
