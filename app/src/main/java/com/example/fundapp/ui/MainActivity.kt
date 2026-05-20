@@ -11,17 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.fundapp.databinding.ActivityMainBinding
 import com.example.fundapp.databinding.DialogAddFundBinding
 import com.example.fundapp.viewmodel.FundViewModel
-import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import com.example.fundapp.viewmodel.FundViewModelFactory
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var fundAdapter: FundAdapter
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
     private lateinit var viewModel: FundViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this, viewModelFactory)[FundViewModel::class.java]
+        viewModel = ViewModelProvider(this, FundViewModelFactory())[FundViewModel::class.java]
 
         setupRecyclerView()
         setupSwipeRefresh()

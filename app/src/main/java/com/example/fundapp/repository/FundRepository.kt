@@ -1,6 +1,6 @@
 package com.example.fundapp.repository
 
-import com.example.fundapp.database.dao.FundDao
+import com.example.fundapp.database.FundDatabase
 import com.example.fundapp.database.entity.FundEntity
 import com.example.fundapp.model.Fund
 import com.example.fundapp.model.FundWithAmount
@@ -12,14 +12,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class FundRepository @Inject constructor(
-    private val fundDao: FundDao,
-    private val fundApiService: FundApiService
-) {
+class FundRepository {
+
+    private val fundDao by lazy { FundDatabase.getInstance().fundDao() }
+    private val fundApiService by lazy { FundApiService.create() }
+
     fun getAllFundsWithAmount(): Flow<List<FundWithAmount>> {
         return fundDao.getAllFunds().combine(getAllFundData()) { entities, funds ->
             entities.map { entity ->
@@ -50,7 +48,6 @@ class FundRepository @Inject constructor(
             val response = fundApiService.getFundData(code)
             convertToFund(response)
         } catch (e: Exception) {
-            // Mock data for demonstration
             createMockFund(code)
         }
     }
@@ -66,7 +63,6 @@ class FundRepository @Inject constructor(
             fundDao.insertFund(fundEntity)
             true
         } catch (e: Exception) {
-            // Mock data for demonstration
             val fundEntity = FundEntity(
                 code = code,
                 name = "测试基金$code",

@@ -6,14 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fundapp.model.FundWithAmount
 import com.example.fundapp.repository.FundRepository
-import dagger.hilt.android.lifecycle.ViewModelScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@ViewModelScoped
-class FundViewModel @Inject constructor(
+class FundViewModel(
     private val fundRepository: FundRepository
 ) : ViewModel() {
 
